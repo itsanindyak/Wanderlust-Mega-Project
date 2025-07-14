@@ -205,7 +205,17 @@ sudo usermod -aG docker ubuntu && newgrp docker
 #
 - <b id="Sonar">Install and configure SonarQube (Master machine)</b>
 ```bash
-docker run -itd --name SonarQube-Server -p 9000:9000 sonarqube:lts-community
+docker volume create sonarqube_data
+docker volume create sonarqube_logs
+docker volume create sonarqube_extensions
+
+docker run -d \
+  --name sonarqube \
+  -p 9000:9000 \
+  -v sonarqube_data:/opt/sonarqube/data \
+  -v sonarqube_logs:/opt/sonarqube/logs \
+  -v sonarqube_extensions:/opt/sonarqube/extensions \
+  sonarqube:lts-community
 ```
 #
 - <b id="Trivy">Install Trivy (Jenkins Worker)</b>
