@@ -1,16 +1,16 @@
 @Library('Shared') _
 pipeline {
     agent {label 'Node'}
-    
+
     environment{
-        SONAR_HOME = tool "Sonar"
+        SONAR_SCANNER_HOME = tool "sonar"
     }
-    
+
     parameters {
         string(name: 'FRONTEND_DOCKER_TAG', defaultValue: '', description: 'Setting docker image for latest push')
         string(name: 'BACKEND_DOCKER_TAG', defaultValue: '', description: 'Setting docker image for latest push')
     }
-    
+
     stages {
         stage("Validate Parameters") {
             steps {
@@ -28,19 +28,19 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Git: Code Checkout') {
             steps {
                 script{
-                    code_checkout("https://github.com/LondheShubham153/Wanderlust-Mega-Project.git","main")
+                    clone("https://github.com/itsanindyak/Wanderlust-Mega-Project.git","main")
                 }
             }
         }
-        
+
         stage("Trivy: Filesystem scan"){
             steps{
                 script{
-                    trivy_scan()
+                    trivy()
                 }
             }
         }
@@ -48,70 +48,70 @@ pipeline {
         stage("OWASP: Dependency check"){
             steps{
                 script{
-                    owasp_dependency()
+                    owasp()
                 }
             }
         }
-        
+
         stage("SonarQube: Code Analysis"){
             steps{
                 script{
-                    sonarqube_analysis("Sonar","wanderlust","wanderlust")
+                    sonarqubeAnalysis("sonar","wanderlust","wanderlust")
                 }
             }
         }
-        
+
         stage("SonarQube: Code Quality Gates"){
             steps{
                 script{
-                    sonarqube_code_quality()
+                    sonarqubeCodeQuality()
                 }
             }
         }
-        
-        stage('Exporting environment variables') {
-            parallel{
-                stage("Backend env setup"){
-                    steps {
-                        script{
-                            dir("Automations"){
-                                sh "bash updatebackendnew.sh"
-                            }
-                        }
-                    }
-                }
-                
-                stage("Frontend env setup"){
-                    steps {
-                        script{
-                            dir("Automations"){
-                                sh "bash updatefrontendnew.sh"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
+
+        // stage('Exporting environment variables') {
+        //     parallel{
+        //         stage("Backend env setup"){
+        //             steps {
+        //                 script{
+        //                     dir("Automations"){
+        //                         sh "bash updatebackendnew.sh"
+        //                     }
+        //                 }
+        //             }
+        //         }
+
+        //         stage("Frontend env setup"){
+        //             steps {
+        //                 script{
+        //                     dir("Automations"){
+        //                         sh "bash updatefrontendnew.sh"
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
         stage("Docker: Build Images"){
             steps{
                 script{
                         dir('backend'){
-                            docker_build("wanderlust-backend-beta","${params.BACKEND_DOCKER_TAG}","trainwithshubham")
+                            dockerBuild("wanderlust-backend-beta","${params.BACKEND_DOCKER_TAG}","itsanindyak")
                         }
-                    
+
                         dir('frontend'){
-                            docker_build("wanderlust-frontend-beta","${params.FRONTEND_DOCKER_TAG}","trainwithshubham")
+                            dockerBuild("wanderlust-frontend-beta","${params.FRONTEND_DOCKER_TAG}","itsanindyak")
                         }
                 }
             }
         }
-        
+
         stage("Docker: Push to DockerHub"){
             steps{
                 script{
-                    docker_push("wanderlust-backend-beta","${params.BACKEND_DOCKER_TAG}","trainwithshubham") 
-                    docker_push("wanderlust-frontend-beta","${params.FRONTEND_DOCKER_TAG}","trainwithshubham")
+                    dockerPush("wanderlust-backend-beta","${params.BACKEND_DOCKER_TAG}","itsanindyak")
+                    dockerPush("wanderlust-frontend-beta","${params.FRONTEND_DOCKER_TAG}","itsanindyak")
                 }
             }
         }
