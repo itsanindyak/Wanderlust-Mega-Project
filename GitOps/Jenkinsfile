@@ -39,14 +39,14 @@ pipeline {
                 script{
                     dir('kubernetes') {
                         sh """
-                            sed -i -E "s|(image:\\\\s*trainwithshubham/wanderlust-backend-beta:).*|\\1${params.BACKEND_DOCKER_TAG}|" backend.yaml
+                            sed -i -E "s|(image:\\\\s*itsanindyak/wanderlust-backend-beta:).*|\\1${params.BACKEND_DOCKER_TAG}|" backend.yaml
                         """
                       }
 
 
                     dir('kubernetes'){
                         sh """
-                            sed -i -E "s|(image:\\\\s*trainwithshubham/wanderlust-frontend-beta:).*|\\1${params.FRONTEND_DOCKER_TAG}|" frontend.yaml
+                            sed -i -E "s|(image:\\\\s*itsanindyak/wanderlust-frontend-beta:).*|\\1${params.FRONTEND_DOCKER_TAG}|" frontend.yaml
 
                         """
                     }
